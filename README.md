@@ -1,3 +1,3 @@
 # Story Pedia
 
-[Name](/public/home-page.png)
+<img src="/public/home-page.png" />
