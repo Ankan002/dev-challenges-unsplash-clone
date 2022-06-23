@@ -1,86 +1,61 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
+import type {NextPage} from 'next';
+import CustomHead from "../components/custom-head";
+import Navbar from "../components/navbar";
+import {useEffect, useRef, useState} from "react";
+import CreateModal from "../components/create-modal";
+import {fetchAllPosts} from "../helpers";
+import {Triangle} from "react-loader-spinner"
+import HomeBody from "../components/home-body";
+import {useRecoilState} from "recoil";
+import {postsAtom} from "../atom/posts-atom";
+import {PostType} from "../Types/PostType";
 
 const Home: NextPage = () => {
+
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState<boolean>(false);
+
+  const [initialLoading, setInitialLoading] = useState<boolean>(false);
+  const [posts, setPosts] = useRecoilState<Array<PostType>>(postsAtom);
+  const isFirstTimeMounted = useRef<boolean>(false);
+
+  const initialFetch = async() => {
+      const response = await fetchAllPosts(initialLoading, setInitialLoading);
+
+      setPosts(response.posts);
+
+      console.log(response);
+  }
+
+  useEffect(() => {
+      if(!isFirstTimeMounted.current){
+          isFirstTimeMounted.current = true;
+
+          initialFetch()
+              .catch(err => console.log(err));
+      }
+  }, []);
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <div className="flex min-h-screen flex-col font-raleway">
+      <CustomHead title="Story Pedia" />
 
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
+      <Navbar setIsCreatePostModalOpen={setIsCreatePostModalOpen} />
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="rounded-md bg-gray-100 p-3 font-mono text-lg">
-            pages/index.tsx
-          </code>
-        </p>
+        {
+            initialLoading ? (
+                <div className="flex-grow flex justify-center items-center">
+                    <Triangle color="#3DB46D" />
+                </div>
+            ) : (
+                <HomeBody />
+            )
+        }
 
-        <div className="mt-6 flex max-w-4xl flex-wrap items-center justify-around sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and its API.
-            </p>
-          </a>
 
-          <a
-            href="https://nextjs.org/learn"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className="flex h-24 w-full items-center justify-center border-t">
-        <a
-          className="flex items-center justify-center gap-2"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </a>
-      </footer>
+      <CreateModal isCreatePostModalOpen={isCreatePostModalOpen} setIsCreatePostModalOpen={setIsCreatePostModalOpen} />
     </div>
-  )
-}
+  );
+};
 
-export default Home
+
+export default Home;
